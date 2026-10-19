@@ -1,0 +1,44 @@
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+  # 1. PostgreSQL: Nuestra base de datos principal (usuarios, partidos, posts)
+  postgres:
+    image: postgres:15-alpine
+    container_name: fanapp_postgres
+    environment:
+      POSTGRES_USER: fanapp_user
+      POSTGRES_PASSWORD: fanapp_password
+      POSTGRES_DB: fanapp_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # 2. MongoDB: Para historial de chat, logs y datos no estructurados
+  mongodb:
+    image: mongo:6.0
+    container_name: fanapp_mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: fanapp_mongo
+      MONGO_INITDB_ROOT_PASSWORD: fanapp_mongo_password
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  # 3. Redis: Para caché y sesiones rápidas
+  redis:
+    image: redis:7-alpine
+    container_name: fanapp_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+# Volúmenes para que los datos no se borren si apagás los contenedores
+volumes:
+  postgres_data:
+  mongodb_data:
+  redis_data:
