@@ -11,6 +11,7 @@ from app.models.user import User
 # Esta línea le dice a FastAPI que busque el token en el header "Authorization: Bearer <token>"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
+
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: AsyncSession = Depends(get_db)
@@ -41,5 +42,20 @@ async def get_current_user(
 
     if user is None:
         raise credentials_exception
-        
+
     return user
+
+
+async def get_current_active_superuser(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """
+    Verifica que el usuario autenticado sea superusuario.
+    Si no lo es, lanza un 403 (autenticado pero sin permisos).
+    """
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tenés permisos de administrador para esta acción.",
+        )
+    return current_user
